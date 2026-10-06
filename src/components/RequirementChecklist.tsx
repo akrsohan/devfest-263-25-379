@@ -121,7 +121,7 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
           return (
             <div
               key={req.id}
-              className={`p-4 sm:p-5 transition-colors ${
+              className={`p-3.5 sm:p-5 transition-colors ${
                 result.status === 'OK'
                   ? 'bg-white hover:bg-emerald-50/20'
                   : result.isBlocking
@@ -129,10 +129,10 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
                   : 'bg-slate-50/40 hover:bg-slate-50'
               }`}
             >
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5 sm:gap-4">
                 {/* Left: Document Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5">
                     {/* Order badge */}
                     <span className="w-6 h-6 rounded-full bg-slate-800 text-white text-xs font-bold font-mono flex items-center justify-center shrink-0">
                       {req.order}
@@ -143,22 +143,22 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
 
                     {/* Mandatory / Optional badge */}
                     {req.mandatory ? (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200 whitespace-nowrap">
                         {t.mandatory}
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
                         {t.optional}
                       </span>
                     )}
 
                     {/* Expiry badge */}
                     {req.has_expiry ? (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
                         {t.expiryRequired}
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-500">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-500 whitespace-nowrap">
                         {t.noExpiryNeeded}
                       </span>
                     )}
@@ -166,10 +166,10 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
 
                   {/* Document Title (Primary & Secondary language) */}
                   <div className="mt-1">
-                    <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug break-words">
                       {primaryTitle}
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 break-words">
                       {secondaryTitle}
                     </p>
                   </div>
@@ -184,15 +184,15 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
                       ) : (
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       )}
-                      <span>{result.message}</span>
+                      <span className="break-words flex-1 min-w-0">{result.message}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Right: Matching & Expiry Controls */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:w-[480px] shrink-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full lg:w-[480px] shrink-0">
                   {/* File Matcher Dropdown */}
-                  <div className="flex-1 min-w-[220px]">
+                  <div className="flex-1 min-w-0 w-full">
                     <div className="flex items-center gap-1.5">
                       <select
                         value={matchedFile?.id || ''}
@@ -200,7 +200,7 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
                           const val = e.target.value;
                           onMatchChange(req.id, val === '' ? null : val);
                         }}
-                        className={`w-full text-xs py-2 px-3 border rounded-lg font-medium cursor-pointer transition-colors ${
+                        className={`w-full text-xs py-2 px-2.5 min-h-[42px] border rounded-lg font-medium cursor-pointer transition-colors ${
                           matchedFile
                             ? 'bg-emerald-50/80 text-emerald-950 border-emerald-300 focus:border-emerald-500'
                             : 'bg-white text-slate-600 border-slate-300 focus:border-blue-500'
@@ -228,7 +228,7 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
                         <button
                           type="button"
                           onClick={() => onMatchChange(req.id, null)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer shrink-0"
+                          className="p-2 min-h-[42px] min-w-[42px] text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer shrink-0 flex items-center justify-center border border-slate-200"
                           title={t.unlinkFile}
                         >
                           <Unlink className="w-4 h-4" />
@@ -239,15 +239,15 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
 
                   {/* Expiry Date Input (Shown when has_expiry = true AND file is matched) */}
                   {req.has_expiry && matchedFile && (
-                    <div className="w-full sm:w-[210px] shrink-0">
-                      <div className="flex items-center gap-1">
-                        <div className="relative flex-1">
+                    <div className="w-full sm:w-[220px] shrink-0">
+                      <div className="flex items-center gap-1.5">
+                        <div className="relative flex-1 min-w-0">
                           <input
                             type="date"
                             value={expiryDate}
                             onChange={(e) => onExpiryDateChange(req.id, e.target.value)}
                             title={`Document Expiry Date (Tender Deadline: ${tender.submission_deadline})`}
-                            className={`w-full text-xs py-1.5 px-2 pl-7 border rounded-md font-mono transition-colors ${
+                            className={`w-full text-xs py-2 px-2 pl-7 min-h-[42px] border rounded-lg font-mono transition-colors ${
                               !expiryDate
                                 ? 'bg-amber-50 text-amber-900 border-amber-300 focus:border-amber-500'
                                 : expiryDate < tender.submission_deadline
@@ -255,20 +255,20 @@ export const RequirementChecklist: React.FC<RequirementChecklistProps> = ({
                                 : 'bg-emerald-50 text-emerald-900 border-emerald-300 focus:border-emerald-500'
                             }`}
                           />
-                          <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2.5 pointer-events-none" />
+                          <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-3.5 pointer-events-none" />
                         </div>
 
                         {/* Quick preset date helper buttons for quick evaluation */}
                         <button
                           type="button"
                           onClick={() => onExpiryDateChange(req.id, tender.submission_deadline)}
-                          className="p-1.5 text-[10px] bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-800 rounded border border-slate-200 cursor-pointer"
+                          className="px-2.5 py-2 min-h-[42px] text-[11px] font-semibold bg-slate-100 hover:bg-blue-100 text-slate-700 hover:text-blue-800 rounded-lg border border-slate-200 cursor-pointer whitespace-nowrap shrink-0 flex items-center justify-center"
                           title="Set expiry date equal to deadline (Tests valid condition)"
                         >
                           =Deadline
                         </button>
                       </div>
-                      <div className="text-[10px] text-slate-400 mt-1 flex justify-between">
+                      <div className="text-[10px] text-slate-400 mt-1 flex justify-between px-0.5">
                         <span>Min: {tender.submission_deadline}</span>
                         {expiryDate && (
                           <span className={expiryDate >= tender.submission_deadline ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>

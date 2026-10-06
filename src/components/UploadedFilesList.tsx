@@ -60,7 +60,7 @@ export const UploadedFilesList: React.FC<UploadedFilesListProps> = ({
   return (
     <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden mb-6">
       {/* Header bar */}
-      <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="px-4 sm:px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
         <div>
           <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <FileText className="w-4 h-4 text-blue-600" />
@@ -78,7 +78,7 @@ export const UploadedFilesList: React.FC<UploadedFilesListProps> = ({
         {autoMatchAvailableCount > 0 && (
           <button
             onClick={onAutoMatch}
-            className="px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+            className="w-full sm:w-auto px-3.5 py-2 min-h-[38px] text-xs font-semibold rounded-md bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
             title="Auto-match unassigned files based on filename similarity"
           >
             <Link className="w-3.5 h-3.5" />
@@ -87,8 +87,143 @@ export const UploadedFilesList: React.FC<UploadedFilesListProps> = ({
         )}
       </div>
 
-      {/* Files Table / List */}
-      <div className="divide-y divide-slate-100 overflow-x-auto">
+      {/* Mobile Card Layout (< 768px) */}
+      <div className="block md:hidden divide-y divide-slate-100">
+        {files.map((file) => {
+          const matchedReqId = fileToReqMap.get(file.id);
+          const matchedReq = matchedReqId ? reqMap.get(matchedReqId) : undefined;
+
+          return (
+            <div
+              key={file.id}
+              className={`p-3.5 sm:p-4 space-y-2.5 transition-colors ${
+                file.isDuplicate ? 'bg-amber-50/40' : file.isDamaged ? 'bg-red-50/40' : 'bg-white'
+              }`}
+            >
+              {/* Row 1: Filename + Remove Button */}
+              <div className="flex items-start justify-between gap-2.5">
+                <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                  <div className={`p-1.5 rounded shrink-0 mt-0.5 ${
+                    file.isDamaged
+                      ? 'bg-red-100 text-red-600'
+                      : file.isDuplicate
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-blue-50 text-blue-600'
+                  }`}>
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-semibold text-slate-900 break-words text-xs leading-snug">
+                      {file.name}
+                    </h4>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onRemoveFile(file.id)}
+                  className="p-2 min-h-[40px] min-w-[40px] text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+                  title="Remove file from upload list"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Row 2: Metadata Pills */}
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                {file.isDamaged ? (
+                  <span className="px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-700">
+                    Unreadable
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full font-semibold bg-slate-100 text-slate-700 font-mono">
+                    {file.pageCount} {t.pagesUnit}
+                  </span>
+                )}
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono">
+                  {formatBytes(file.size)}
+                </span>
+                <span
+                  className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono text-[10px]"
+                  title={`SHA-256: ${file.hash}`}
+                >
+                  HASH: {file.hash.substring(0, 8)}...{file.hash.substring(file.hash.length - 4)}
+                </span>
+              </div>
+
+              {/* Warnings */}
+              {file.isDuplicate && (
+                <div className="flex items-center gap-1.5 text-[11px] text-amber-800 font-medium bg-amber-100/70 p-2 rounded-lg border border-amber-200">
+                  <Copy className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span>{t.duplicateDetected}: Duplicate file cannot be matched.</span>
+                </div>
+              )}
+              {file.isDamaged && (
+                <div className="flex items-center gap-1.5 text-[11px] text-red-800 font-medium bg-red-100/70 p-2 rounded-lg border border-red-200">
+                  <ShieldAlert className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                  <span>{file.errorMessage || t.unreadablePdf}</span>
+                </div>
+              )}
+
+              {/* Row 3: Matching Dropdown */}
+              {!file.isDamaged && !file.isDuplicate && (
+                <div className="pt-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                    Matched Requirement:
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <select
+                      value={matchedReqId || ''}
+                      onChange={(e) => {
+                        const newReqId = e.target.value;
+                        if (newReqId === '') {
+                          if (matchedReqId) onMatchChange(matchedReqId, null);
+                        } else {
+                          onMatchChange(newReqId, file.id);
+                        }
+                      }}
+                      className={`w-full text-xs py-2 px-2.5 min-h-[42px] border rounded-lg font-medium cursor-pointer ${
+                        matchedReq
+                          ? 'bg-emerald-50 text-emerald-950 border-emerald-300'
+                          : 'bg-white text-slate-700 border-slate-300'
+                      }`}
+                    >
+                      <option value="">-- {t.matchFilePrompt} --</option>
+                      {requirements.map((req) => {
+                        const isCurrent = matchedReqId === req.id;
+                        const isAssignedToOther = matches[req.id] && matches[req.id] !== file.id;
+                        const title = language === 'bn' ? req.title_bn : req.title_en;
+                        return (
+                          <option
+                            key={req.id}
+                            value={req.id}
+                            disabled={Boolean(isAssignedToOther)}
+                          >
+                            #{req.order}: {title} {isAssignedToOther ? '(Assigned)' : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {matchedReqId && (
+                      <button
+                        type="button"
+                        onClick={() => onMatchChange(matchedReqId, null)}
+                        className="p-2 min-h-[42px] min-w-[42px] text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer shrink-0 flex items-center justify-center border border-slate-200"
+                        title={t.unlinkFile}
+                      >
+                        <Unlink className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop Table View (>= 768px) */}
+      <div className="hidden md:block w-full max-w-full overflow-x-auto">
         <table className="min-w-full text-left text-xs">
           <thead className="bg-slate-50/60 text-slate-500 uppercase tracking-wider font-semibold text-[11px]">
             <tr>
@@ -113,7 +248,7 @@ export const UploadedFilesList: React.FC<UploadedFilesListProps> = ({
                   }`}
                 >
                   {/* Filename & status badges */}
-                  <td className="py-3 px-4 min-w-[240px]">
+                  <td className="py-3 px-4 min-w-[200px]">
                     <div className="flex items-start gap-2.5">
                       <div className={`p-1.5 rounded shrink-0 mt-0.5 ${
                         file.isDamaged
@@ -125,7 +260,7 @@ export const UploadedFilesList: React.FC<UploadedFilesListProps> = ({
                         <FileText className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <div className="font-semibold text-slate-800 break-all text-xs" title={file.name}>
+                        <div className="font-semibold text-slate-800 break-words text-xs" title={file.name}>
                           {file.name}
                         </div>
 
@@ -177,7 +312,7 @@ export const UploadedFilesList: React.FC<UploadedFilesListProps> = ({
                   </td>
 
                   {/* Matched Requirement Selector */}
-                  <td className="py-3 px-3 min-w-[220px]">
+                  <td className="py-3 px-3 min-w-[200px]">
                     {file.isDamaged ? (
                       <span className="text-slate-400 italic text-[11px]">Cannot match damaged file</span>
                     ) : file.isDuplicate ? (

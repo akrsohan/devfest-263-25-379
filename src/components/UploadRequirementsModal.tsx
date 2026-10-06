@@ -131,27 +131,27 @@ export const UploadRequirementsModal: React.FC<UploadRequirementsModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FileCode className="w-5 h-5 text-blue-400" />
-            <h3 className="text-base font-bold">Load Tender Requirements (JSON)</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[92vh] sm:max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
+        <div className="bg-slate-900 text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <FileCode className="w-5 h-5 text-blue-400 shrink-0" />
+            <h3 className="text-sm sm:text-base font-bold break-words">Load Tender Requirements (JSON)</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-md cursor-pointer">
+          <button onClick={onClose} className="text-slate-400 hover:text-white p-1.5 rounded-md cursor-pointer shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleManualSubmit} className="p-6 space-y-4">
-          <p className="text-xs text-slate-600">
+        <form onSubmit={handleManualSubmit} className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 flex-1 overflow-y-auto">
+          <p className="text-[11px] sm:text-xs text-slate-600 break-words">
             Select a custom <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-blue-700">requirements.json</code> file or paste JSON code directly to evaluate against unseen competition test packs.
           </p>
 
           {/* File Picker */}
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-4 text-center cursor-pointer bg-slate-50 hover:bg-blue-50/50 transition-colors"
+            className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-3.5 sm:p-4 text-center cursor-pointer bg-slate-50 hover:bg-blue-50/50 transition-colors"
           >
             <input
               ref={fileInputRef}
@@ -160,16 +160,16 @@ export const UploadRequirementsModal: React.FC<UploadRequirementsModalProps> = (
               className="hidden"
               onChange={handleFileUpload}
             />
-            <UploadCloud className="w-7 h-7 text-blue-600 mx-auto mb-1.5" />
+            <UploadCloud className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 mx-auto mb-1.5" />
             <div className="text-xs font-semibold text-slate-800">
               Click to browse requirements.json
             </div>
-            <div className="text-[11px] text-slate-500">
+            <div className="text-[10px] sm:text-[11px] text-slate-500">
               Supports standard competition format
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-slate-400 text-xs">
+          <div className="flex items-center gap-2 text-slate-400 text-[11px] sm:text-xs">
             <div className="h-px bg-slate-200 flex-1" />
             <span>OR PASTE JSON CODE</span>
             <div className="h-px bg-slate-200 flex-1" />
@@ -177,33 +177,33 @@ export const UploadRequirementsModal: React.FC<UploadRequirementsModalProps> = (
 
           <div>
             <textarea
-              rows={7}
+              rows={6}
               value={jsonText}
               onChange={(e) => setJsonText(e.target.value)}
               placeholder="Paste requirements.json content here..."
-              className="w-full text-xs font-mono p-3 border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:border-blue-500"
+              className="w-full text-xs font-mono p-2.5 sm:p-3 border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:border-blue-500"
             />
           </div>
 
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-              <span>{error}</span>
+              <span className="break-words">{error}</span>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 min-h-[40px] text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer text-center"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!jsonText.trim()}
-              className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-lg flex items-center gap-1.5 cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 min-h-[40px] text-xs font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-lg flex items-center justify-center gap-1.5 cursor-pointer text-center"
             >
               <Check className="w-4 h-4" />
               <span>Apply Requirements</span>

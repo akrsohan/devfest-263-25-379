@@ -421,7 +421,7 @@ export default function App() {
   }, [validationResults, auditedFiles, expiryDates]);
 
   return (
-    <div className="min-h-screen bg-slate-100/70 text-slate-900 font-sans flex flex-col selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-100/70 text-slate-900 font-sans flex flex-col selection:bg-blue-600 selection:text-white overflow-x-hidden">
       {/* Executive Header */}
       <Header
         language={language}
@@ -438,7 +438,7 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex-1 w-full min-w-0">
         {/* Section 4: Tender Summary & Readiness Progress */}
         <TenderSummary
           tender={tender}
@@ -493,17 +493,18 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-6 text-xs text-center">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+      <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-5 sm:py-6 text-xs text-center sm:text-left">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             <span className="text-slate-300 font-medium">Tender Document Package Builder</span>
-            <span>• 100% Client-Side In-Browser PDF Assembly</span>
+            <span className="hidden sm:inline">•</span>
+            <span>100% Client-Side In-Browser PDF Assembly</span>
           </div>
-          <div className="flex items-center gap-4 text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-slate-400">
             <span>pdf-lib v1.17</span>
             <span>•</span>
-            <span>SHA-256 Content Auditing</span>
+            <span>SHA-256 Auditing</span>
             <span>•</span>
             <span>Bilingual (EN / বাংলা)</span>
           </div>
@@ -538,9 +539,9 @@ export default function App() {
 
       {/* Toast Notification Banner */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 text-xs font-semibold flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200">
-          <span className="w-2 h-2 rounded-full bg-blue-400" />
-          <span>{toastMessage}</span>
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-5 sm:bottom-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 text-xs font-semibold flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200 max-w-sm sm:max-w-md">
+          <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+          <span className="break-words">{toastMessage}</span>
         </div>
       )}
     </div>
