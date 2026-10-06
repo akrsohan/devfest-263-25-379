@@ -1,4 +1,6 @@
-# Tender Document Package Builder
+# TenderPack
+
+**Smart Tender Document Checker & Package Generator**
 
 A 100% browser-side, client-only web application designed for office workers and procurement specialists to verify tender documents, audit duplicate PDFs with SHA-256 fingerprints, check submission deadline compliance, match requirements, and assemble an official combined bid package with cover page, table of contents, and universal pagination.
 

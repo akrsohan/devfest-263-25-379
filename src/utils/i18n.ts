@@ -61,8 +61,8 @@ export interface Translations {
 
 export const I18N: Record<Language, Translations> = {
   en: {
-    appName: 'Tender Document Package Builder',
-    appSubtitle: 'Browser-Side Tender Verification, Duplicate Auditing & Final Merged Package Generator',
+    appName: 'TenderPack',
+    appSubtitle: 'Smart Tender Document Checker & Package Generator',
     tenderSummary: 'Tender Information Summary',
     tenderId: 'Tender ID / Ref',
     tenderTitle: 'Tender Title',
@@ -119,8 +119,8 @@ export const I18N: Record<Language, Translations> = {
     pageFooterNotice: 'All pages will have official <tender_id> | Page X of Y subtle footers.',
   },
   bn: {
-    appName: 'দরপত্র নথি প্যাকেজ বিল্ডার',
-    appSubtitle: 'ব্রাউজার-ভিত্তিক দরপত্র যাচাইকরণ, ডুপ্লিকেট শনাক্তকরণ ও চূড়ান্ত একত্রিত প্যাকেজ প্রস্তুতকারক',
+    appName: 'TenderPack',
+    appSubtitle: 'Smart Tender Document Checker & Package Generator',
     tenderSummary: 'দরপত্রের তথ্যাবলীর সারসংক্ষেপ',
     tenderId: 'দরপত্র আইডি / রেফারেন্স',
     tenderTitle: 'দরপত্রের শিরোনাম',

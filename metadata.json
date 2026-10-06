@@ -1,6 +1,8 @@
 {
-  "name": "Tender Document Package Builder",
-  "description": "Browser-side verification, duplicate detection, matching, and final combined PDF package generator for tender submissions.",
+  "name": "TenderPack",
+  "description": "Smart Tender Document Checker & Package Generator. Browser-side verification, duplicate detection, matching, and final combined PDF package generator for tender submissions.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

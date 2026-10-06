@@ -497,9 +497,9 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="text-slate-300 font-medium">Tender Document Package Builder</span>
+            <span className="text-slate-300 font-medium">TenderPack</span>
             <span className="hidden sm:inline">•</span>
-            <span>100% Client-Side In-Browser PDF Assembly</span>
+            <span>Smart Tender Document Checker & Package Generator</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-slate-400">
             <span>pdf-lib v1.17</span>
