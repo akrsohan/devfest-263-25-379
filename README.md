@@ -19,6 +19,7 @@ The application allows users to load tender requirements, upload PDF documents, 
 
 **Live Demo:**  
 https://devfest-263-15-379.vercel.app/
+HTTPS : https://github.com/akrsohan/devfest-263-25-379.git
 
 The website is publicly accessible without requiring login or special permission.
 
