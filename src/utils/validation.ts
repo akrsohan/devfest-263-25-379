@@ -70,6 +70,27 @@ export function validateAllRequirements(
     });
   }
 
+  // Safety check: ensure each matched file is assigned to at most one requirement
+  const fileMatchedToReqs = new Map<string, string[]>();
+  for (const [rId, fId] of Object.entries(matches)) {
+    if (!fId) continue;
+    const reqObj = tender.requirements.find(r => r.id === rId);
+    const rTitle = reqObj ? reqObj.title_en : rId;
+    const existing = fileMatchedToReqs.get(fId) || [];
+    existing.push(rTitle);
+    fileMatchedToReqs.set(fId, existing);
+  }
+
+  fileMatchedToReqs.forEach((reqTitles, fId) => {
+    if (reqTitles.length > 1) {
+      const fObj = fileMap.get(fId);
+      const fName = fObj ? fObj.name : fId;
+      blockingReasons.push(
+        `Safety conflict: File "${fName}" cannot be assigned to multiple requirements: [${reqTitles.join(', ')}].`
+      );
+    }
+  });
+
   // Sort requirements by order
   const sortedReqs = [...tender.requirements].sort((a, b) => a.order - b.order);
 

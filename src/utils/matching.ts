@@ -1,81 +1,172 @@
 import { Requirement, UploadedPdfFile } from '../types/tender';
 
+const STOP_WORDS = new Set([
+  'certificate',
+  'certificates',
+  'certification',
+  'cert',
+  'document',
+  'documents',
+  'doc',
+  'copy',
+  'copies',
+  'form',
+  'letter',
+  'file',
+  'pdf',
+  'official',
+  'and',
+  'the',
+  'for',
+  'with',
+  'from',
+  'in',
+  'of',
+  'to',
+  'a',
+  'an',
+  'latest',
+  'valid',
+  'recent',
+  'attested',
+  'scanned',
+  'signed',
+]);
+
 /**
- * Normalizes text for matching by removing non-alphanumeric chars,
- * leading sequence numbers, file extensions, and extra spaces.
+ * Normalizes text and strips generic stopwords, leading file sequence numbers,
+ * file extensions, and extra characters.
  */
-function normalizeText(text: string): string {
-  return text
+function cleanTokens(str: string): string[] {
+  return str
     .toLowerCase()
     .replace(/\.pdf$/i, '')
-    .replace(/^\s*\d+[\s._-]+/, '') // remove leading "01_", "2.", etc.
-    .replace(/[_-]/g, ' ')
+    .replace(/\(\d+\)/g, ' ')
+    .replace(/^\s*\d+[\s._-]+/, '') // remove arbitrary file prefixes like "01_", "02.", "03_"
     .replace(/[^a-z0-9\s]/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+    .split(/\s+/)
+    .filter(w => w.length > 1 && !STOP_WORDS.has(w));
 }
+
+interface Topic {
+  id: string;
+  keywords: string[];
+  negativeKeywords?: string[];
+}
+
+const TOPICS: Topic[] = [
+  {
+    id: 'tin_tax',
+    keywords: ['tin', 'tax', 'income tax', 'tax clearance', 'it77', 'etin', 'tax return', 'challan'],
+    negativeKeywords: ['vat', 'bin', 'bank', 'solvency', 'trade'],
+  },
+  {
+    id: 'vat_bin',
+    keywords: ['vat', 'bin', 'musak', 'mushak', 'mushok', '13 digit', 'value added tax'],
+    negativeKeywords: ['tin', 'income tax', 'bank', 'solvency', 'trade'],
+  },
+  {
+    id: 'bank_solvency',
+    keywords: ['bank', 'solvency', 'credit facility', 'credit line', 'bank solvency', 'financial solvency', 'liquid asset'],
+    negativeKeywords: ['tin', 'vat', 'trade license', 'incorporation', 'audit'],
+  },
+  {
+    id: 'trade_license',
+    keywords: ['trade license', 'trade licence', 'trade', 'poroshava', 'city corporation'],
+    negativeKeywords: ['bank', 'vat', 'tin', 'audit'],
+  },
+  {
+    id: 'incorporation',
+    keywords: ['incorporation', 'incorporate', 'coi', 'memorandum', 'moa', 'aoa', 'rjsc', 'articles of association'],
+    negativeKeywords: ['trade', 'vat', 'tin', 'bank'],
+  },
+  {
+    id: 'audit_financial',
+    keywords: ['audit', 'audited', 'financial statements', 'financial report', 'balance sheet', 'annual report'],
+    negativeKeywords: ['solvency', 'bank solvency', 'trade'],
+  },
+  {
+    id: 'experience',
+    keywords: ['experience', 'work experience', 'completion', 'contract completion', 'credential', 'similar experience'],
+    negativeKeywords: ['trade', 'tin', 'vat', 'bank'],
+  },
+  {
+    id: 'maf',
+    keywords: ['maf', 'manufacturer authorization', 'authorization letter', 'authorization form', 'oem authorization', 'partner authorization'],
+    negativeKeywords: ['trade', 'tin', 'vat', 'bank'],
+  },
+  {
+    id: 'iso',
+    keywords: ['iso', '27001', '9001', 'quality management', 'quality certification'],
+    negativeKeywords: ['trade', 'tin', 'vat', 'bank'],
+  },
+  {
+    id: 'litigation',
+    keywords: ['litigation', 'blacklisting', 'non blacklisting', 'declaration', 'affidavit'],
+    negativeKeywords: ['trade', 'tin', 'vat', 'bank'],
+  },
+  {
+    id: 'enlistment',
+    keywords: ['enlistment', 'contractor enlistment', 'contractor license'],
+    negativeKeywords: ['trade', 'tin', 'vat', 'bank'],
+  },
+  {
+    id: 'security_bond',
+    keywords: ['tender security', 'bid bond', 'bank guarantee', 'bid security'],
+    negativeKeywords: ['trade', 'tin', 'vat'],
+  },
+];
 
 /**
  * Calculates a match score between a filename and a requirement.
+ * Strictly relies on semantic topics and non-stopword tokens.
+ * Never matches on requirement order or file index alone.
  */
 export function calculateMatchScore(filename: string, req: Requirement): number {
-  const normFile = normalizeText(filename);
-  const normTitleEn = normalizeText(req.title_en);
-  const wordsFile = normFile.split(' ').filter(w => w.length > 1);
-  const wordsReq = normTitleEn.split(' ').filter(w => w.length > 2);
+  const normFile = filename.toLowerCase().replace(/\.pdf$/i, '').replace(/[_-]/g, ' ').trim();
+  const normReqEn = req.title_en.toLowerCase().replace(/[_-]/g, ' ').trim();
+  const normReqBn = (req.title_bn || '').toLowerCase().replace(/[_-]/g, ' ').trim();
 
-  // Exact phrase substring match
-  if (normFile.includes(normTitleEn) || normTitleEn.includes(normFile)) {
-    return 0.95;
-  }
+  const fileTokens = cleanTokens(normFile);
+  const reqTokens = cleanTokens(normReqEn);
 
-  // Check common tender keywords & acronyms
-  const keywordMappings: Record<string, string[]> = {
-    trade: ['trade', 'license', 'licence', 'poroashava', 'city'],
-    tin: ['tin', 'tax', 'return', 'income', 'it77'],
-    tax: ['tax', 'clearance', 'tin', 'challan'],
-    vat: ['vat', 'bin', 'musak', 'mushak', '13 digit'],
-    bin: ['bin', 'vat', 'registration', 'musak'],
-    incorporation: ['incorporation', 'inc', 'coi', 'memorandum', 'moa', 'aoa', 'rjsc'],
-    audit: ['audit', 'audited', 'financial', 'balance', 'report', 'statements'],
-    bank: ['bank', 'solvency', 'credit', 'facility', 'liquid', 'assets'],
-    solvency: ['solvency', 'bank', 'certificate', 'statement'],
-    experience: ['experience', 'work', 'completion', 'contract', 'credential', 'similar'],
-    maf: ['maf', 'authorization', 'manufacturer', 'partner', 'oem'],
-    iso: ['iso', '27001', '9001', 'quality', 'compliance', 'cert'],
-    litigation: ['litigation', 'blacklisting', 'non-blacklisting', 'court', 'declaration', 'affidavit'],
-    enlistment: ['enlistment', 'contractor', 'license', 'pwd', 'rhd'],
-    security: ['security', 'bond', 'guarantee', 'bid', 'bg'],
-  };
+  // 1. Topic-based semantic matching
+  for (const topic of TOPICS) {
+    const fileHasTopic = topic.keywords.some(k => normFile.includes(k) || fileTokens.includes(k));
+    const reqHasTopic = topic.keywords.some(k => normReqEn.includes(k) || reqTokens.includes(k));
 
-  let score = 0;
+    const fileHasNeg = topic.negativeKeywords
+      ? topic.negativeKeywords.some(k => normFile.includes(k) || fileTokens.includes(k))
+      : false;
 
-  // 1. Check order number match: e.g. "01_trade_license" and req.order === 1
-  const leadingNumMatch = filename.match(/^0*(\d+)/);
-  if (leadingNumMatch && parseInt(leadingNumMatch[1], 10) === req.order) {
-    score += 0.35;
-  }
-
-  // 2. Token overlap
-  let matchedTokens = 0;
-  for (const w of wordsFile) {
-    if (wordsReq.includes(w)) {
-      matchedTokens++;
-      score += 0.25;
+    if (fileHasTopic && reqHasTopic && !fileHasNeg) {
+      return 0.95;
+    } else if ((fileHasTopic && !reqHasTopic) || (reqHasTopic && fileHasNeg)) {
+      // Direct topic conflict (e.g. VAT file vs TIN requirement, or TIN file vs VAT requirement)
+      return 0;
     }
   }
 
-  // 3. Keyword / acronym semantics
-  for (const [key, aliases] of Object.entries(keywordMappings)) {
-    const fileHasAlias = aliases.some(a => normFile.includes(a));
-    const reqHasAlias = aliases.some(a => normTitleEn.includes(a));
-    if (fileHasAlias && reqHasAlias) {
-      score += 0.45;
-      break;
+  // 2. Generic token overlap for custom/unseen requirements
+  if (fileTokens.length > 0 && reqTokens.length > 0) {
+    const shared = fileTokens.filter(t => reqTokens.includes(t));
+    if (shared.length > 0) {
+      return Math.min((shared.length / Math.max(reqTokens.length, 1)) * 0.85, 0.90);
     }
   }
 
-  return Math.min(score, 1);
+  // 3. Fallback check for exact clean substring
+  const strippedFile = normFile.replace(/^\s*\d+[\s._-]+/, '').trim();
+  if (strippedFile.length > 3 && (normReqEn.includes(strippedFile) || strippedFile.includes(normReqEn))) {
+    return 0.80;
+  }
+
+  // Also check Bangla title if present
+  if (normReqBn && normFile.includes(normReqBn)) {
+    return 0.85;
+  }
+
+  return 0;
 }
 
 export interface MatchSuggestion {
@@ -89,6 +180,7 @@ export interface MatchSuggestion {
 
 /**
  * Produces best match suggestions for unmatched files and requirements.
+ * Enforces strict 1-to-1 matching and excludes duplicates or damaged files.
  */
 export function getAutoMatchSuggestions(
   files: UploadedPdfFile[],
@@ -112,7 +204,7 @@ export function getAutoMatchSuggestions(
   for (const file of availableFiles) {
     for (const req of availableReqs) {
       const score = calculateMatchScore(file.name, req);
-      if (score >= 0.3) {
+      if (score >= 0.40) {
         candidates.push({ file, req, score });
       }
     }

@@ -104,7 +104,31 @@ export default function App() {
 
   // Handlers for file management
   const handleAddFiles = (newFiles: UploadedPdfFile[]) => {
-    setUploadedFiles(prev => [...prev, ...newFiles]);
+    setUploadedFiles(prev => {
+      const combined = [...prev, ...newFiles];
+
+      // Auto-assign high-confidence semantic matches for new unassigned files
+      const newMatches = { ...matches };
+      const assignedReqs = new Set(Object.keys(newMatches));
+      const assignedFiles = new Set(Object.values(newMatches));
+
+      const suggestions = getAutoMatchSuggestions(combined, tender.requirements, newMatches);
+      let autoMatchedCount = 0;
+      suggestions.forEach(s => {
+        if (s.confidence >= 80 && !assignedReqs.has(s.requirementId) && !assignedFiles.has(s.fileId)) {
+          newMatches[s.requirementId] = s.fileId;
+          assignedReqs.add(s.requirementId);
+          assignedFiles.add(s.fileId);
+          autoMatchedCount++;
+        }
+      });
+
+      if (autoMatchedCount > 0) {
+        setMatches(newMatches);
+      }
+
+      return combined;
+    });
     showToast(`Added ${newFiles.length} file(s). Exact content SHA-256 audited.`);
   };
 
@@ -327,6 +351,33 @@ export default function App() {
             expiryDate: expiryDates[r.requirement.id],
           };
         });
+
+      // Safety check: validate that each matched PDF is assigned to the selected requirement
+      // and that no two non-duplicate or duplicate files are matched to the same requirement
+      const usedFileIds = new Set<string>();
+      const usedReqIds = new Set<string>();
+
+      for (const item of matchedList) {
+        if (!item.file) {
+          throw new Error(`Safety check failed: Attached file for requirement "${item.requirement.title_en}" is missing.`);
+        }
+        if (usedReqIds.has(item.requirement.id)) {
+          throw new Error(`Safety check failed: Multiple documents assigned to requirement "${item.requirement.title_en}".`);
+        }
+        usedReqIds.add(item.requirement.id);
+
+        if (usedFileIds.has(item.file.id)) {
+          throw new Error(`Safety check failed: File "${item.file.name}" is assigned to more than one requirement.`);
+        }
+        usedFileIds.add(item.file.id);
+
+        if (item.file.isDuplicate) {
+          throw new Error(`Safety check failed: Duplicate file "${item.file.name}" cannot be included in final package.`);
+        }
+        if (item.file.isDamaged) {
+          throw new Error(`Safety check failed: Corrupted or unreadable file "${item.file.name}" cannot be packaged.`);
+        }
+      }
 
       const { pdfBytes, totalPages, filename } = await generateTenderPackage(
         tender,
